@@ -393,6 +393,15 @@ async function scheduled(
   const options = buildSandboxOptions(env);
   const sandbox = getSandbox(env.Sandbox, 'moltbot', options);
 
+  // Ensure the container is running before attempting to sync
+  // Without this, the container may be asleep and startProcess calls will fail
+  try {
+    await ensureMoltbotGateway(sandbox, env);
+  } catch (error) {
+    console.error('[cron] Failed to wake container:', error);
+    return;
+  }
+
   console.log('[cron] Starting backup sync to R2...');
   const result = await syncToR2(sandbox, env);
   

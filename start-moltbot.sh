@@ -219,6 +219,37 @@ if (process.env.CDP_SECRET && process.env.WORKER_URL) {
     console.log('Configured browser profile with CDP URL');
 }
 
+// Brave Search API configuration for web search tool
+if (process.env.BRAVE_API_KEY) {
+    config.tools = config.tools || {};
+    config.tools.web = config.tools.web || {};
+    config.tools.web.search = {
+        enabled: true,
+        provider: 'brave',
+        apiKey: process.env.BRAVE_API_KEY,
+        maxResults: 10,
+        timeoutSeconds: 30,
+        cacheTtlMinutes: 15
+    };
+    console.log('Configured Brave Search web tool');
+}
+
+// Firecrawl API configuration for enhanced web content extraction
+if (process.env.FIRECRAWL_API_KEY) {
+    config.tools = config.tools || {};
+    config.tools.web = config.tools.web || {};
+    config.tools.web.fetch = config.tools.web.fetch || {};
+    config.tools.web.fetch.firecrawl = {
+        enabled: true,
+        apiKey: process.env.FIRECRAWL_API_KEY,
+        baseUrl: 'https://api.firecrawl.dev',
+        onlyMainContent: true,
+        maxAgeMs: 86400000,
+        timeoutSeconds: 60
+    };
+    console.log('Configured Firecrawl web fetch fallback');
+}
+
 // Base URL override (e.g., for Cloudflare AI Gateway)
 // Usage: Set AI_GATEWAY_BASE_URL or ANTHROPIC_BASE_URL to your endpoint like:
 //   https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/anthropic

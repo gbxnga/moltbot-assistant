@@ -24,3 +24,11 @@ MOLTBOT_GATEWAY_TOKEN=dev-token-change-in-prod
 # CDP (Chrome DevTools Protocol) configuration for browser automation
 # CDP_SECRET=shared-secret-for-cdp-auth
 # WORKER_URL=https://your-worker.example.com
+
+# Brave Search API for web search capability
+# Get your API key at https://brave.com/search/api/ (select "Data for Search" plan)
+# BRAVE_API_KEY=BSA...
+
+# Firecrawl API for enhanced web content extraction (optional fallback for web_fetch)
+# Get your API key at https://firecrawl.dev
+# FIRECRAWL_API_KEY=fc-...

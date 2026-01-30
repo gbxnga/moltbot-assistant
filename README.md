@@ -326,6 +326,30 @@ node /root/clawd/skills/cloudflare-browser/scripts/video.js "https://site1.com,h
 
 See `skills/cloudflare-browser/SKILL.md` for full documentation.
 
+### Web Search (Brave)
+
+Web search via the Brave Search API. Requires `BRAVE_API_KEY` to be set.
+
+**Setup:**
+```bash
+npx wrangler secret put BRAVE_API_KEY
+# Get your API key at https://brave.com/search/api/ (select "Data for Search" plan)
+```
+
+Once configured, the agent will have access to web search via the built-in `web` tool.
+
+See [OpenClaw web tool docs](https://docs.openclaw.ai/tools/web) for more details.
+
+### Web Fetch (Firecrawl)
+
+Enhanced web content extraction via Firecrawl. Optional fallback for the `web_fetch` tool when Readability extraction fails.
+
+**Setup:**
+```bash
+npx wrangler secret put FIRECRAWL_API_KEY
+# Get your API key at https://firecrawl.dev
+```
+
 ## Optional: Cloudflare AI Gateway
 
 You can route API requests through [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/) for caching, rate limiting, analytics, and cost tracking. AI Gateway supports multiple providers — configure your preferred provider in the gateway and use these env vars:
@@ -381,6 +405,8 @@ The `AI_GATEWAY_*` variables take precedence over `ANTHROPIC_*` if both are set.
 | `SLACK_APP_TOKEN` | No | Slack app token |
 | `CDP_SECRET` | No | Shared secret for CDP endpoint authentication (see [Browser Automation](#optional-browser-automation-cdp)) |
 | `WORKER_URL` | No | Public URL of the worker (required for CDP) |
+| `BRAVE_API_KEY` | No | Brave Search API key for web search ([brave.com/search/api](https://brave.com/search/api/)) |
+| `FIRECRAWL_API_KEY` | No | Firecrawl API key for enhanced web content extraction ([firecrawl.dev](https://firecrawl.dev)) |
 
 ## Security Considerations
 

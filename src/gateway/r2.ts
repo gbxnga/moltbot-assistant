@@ -7,20 +7,26 @@ import { R2_MOUNT_PATH, R2_BUCKET_NAME } from '../config';
  */
 async function isR2Mounted(sandbox: Sandbox): Promise<boolean> {
   try {
-    const proc = await sandbox.startProcess(`mount | grep "s3fs on ${R2_MOUNT_PATH}"`);
+    // Use mountpoint command which is more reliable than parsing mount output
+    // Also check if the directory exists and has the s3fs marker
+    const proc = await sandbox.startProcess(
+      `(mountpoint -q "${R2_MOUNT_PATH}" 2>/dev/null && echo "mounted") || ` +
+      `(mount | grep -q "s3fs on ${R2_MOUNT_PATH}" && echo "mounted") || echo "not_mounted"`
+    );
     // Wait for the command to complete
     let attempts = 0;
-    while (proc.status === 'running' && attempts < 10) {
+    while (proc.status === 'running' && attempts < 15) {
       await new Promise(r => setTimeout(r, 200));
       attempts++;
     }
     const logs = await proc.getLogs();
-    // If stdout has content, the mount exists
-    const mounted = !!(logs.stdout && logs.stdout.includes('s3fs'));
-    console.log('isR2Mounted check:', mounted, 'stdout:', logs.stdout?.slice(0, 100));
-    return mounted;
+    const mounted = logs.stdout?.includes('mounted') && !logs.stdout?.includes('not_mounted');
+    if (mounted) {
+      console.log('R2 already mounted at', R2_MOUNT_PATH);
+    }
+    return !!mounted;
   } catch (err) {
-    console.log('isR2Mounted error:', err);
+    // If check fails, assume not mounted and let mount attempt handle it
     return false;
   }
 }

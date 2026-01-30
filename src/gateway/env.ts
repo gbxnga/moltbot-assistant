@@ -56,6 +56,10 @@ export function buildEnvVars(env: MoltbotEnv): Record<string, string> {
   // Cloudflare Access Service Token for CDP endpoint auth
   if (env.CF_ACCESS_CLIENT_ID) envVars.CF_ACCESS_CLIENT_ID = env.CF_ACCESS_CLIENT_ID;
   if (env.CF_ACCESS_CLIENT_SECRET) envVars.CF_ACCESS_CLIENT_SECRET = env.CF_ACCESS_CLIENT_SECRET;
+  // Brave Search API
+  if (env.BRAVE_API_KEY) envVars.BRAVE_API_KEY = env.BRAVE_API_KEY;
+  // Firecrawl API
+  if (env.FIRECRAWL_API_KEY) envVars.FIRECRAWL_API_KEY = env.FIRECRAWL_API_KEY;
 
   return envVars;
 }

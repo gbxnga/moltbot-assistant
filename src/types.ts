@@ -40,6 +40,10 @@ export interface MoltbotEnv {
   // Cloudflare Access Service Token for CDP endpoint (defense in depth)
   CF_ACCESS_CLIENT_ID?: string;
   CF_ACCESS_CLIENT_SECRET?: string;
+  // Brave Search API for web search capability
+  BRAVE_API_KEY?: string;
+  // Firecrawl API for enhanced web content extraction
+  FIRECRAWL_API_KEY?: string;
 }
 
 /**
