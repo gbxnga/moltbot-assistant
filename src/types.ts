@@ -44,6 +44,8 @@ export interface MoltbotEnv {
   BRAVE_API_KEY?: string;
   // Firecrawl API for enhanced web content extraction
   FIRECRAWL_API_KEY?: string;
+  // OpenRouter API for multi-model access (fallback models)
+  OPENROUTER_API_KEY?: string;
 }
 
 /**

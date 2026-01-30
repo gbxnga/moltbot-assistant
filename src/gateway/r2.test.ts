@@ -76,7 +76,7 @@ describe('mountR2Storage', () => {
 
       expect(result).toBe(true);
       expect(mountBucketMock).toHaveBeenCalledWith(
-        'moltbot-data',
+        'moltbot-assistant-data',
         '/data/moltbot',
         {
           endpoint: 'https://account123.r2.cloudflarestorage.com',
@@ -84,6 +84,7 @@ describe('mountR2Storage', () => {
             accessKeyId: 'key123',
             secretAccessKey: 'secret',
           },
+          s3fsOptions: ['nonempty'],
         }
       );
     });
@@ -135,12 +136,14 @@ describe('mountR2Storage', () => {
 
     it('returns true if mount fails but check shows it is actually mounted', async () => {
       const { sandbox, mountBucketMock, startProcessMock } = createMockSandbox();
+      // First call: initial mount check returns not mounted
+      // Second call: post-failure mount check returns mounted
       startProcessMock
-        .mockResolvedValueOnce(createMockProcess(''))
-        .mockResolvedValueOnce(createMockProcess('s3fs on /data/moltbot type fuse.s3fs\n'));
-      
+        .mockResolvedValueOnce(createMockProcess('not_mounted\n'))
+        .mockResolvedValueOnce(createMockProcess('mounted\n'));
+
       mountBucketMock.mockRejectedValue(new Error('Transient error'));
-      
+
       const env = createMockEnvWithR2();
 
       const result = await mountR2Storage(sandbox, env);

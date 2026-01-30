@@ -14,15 +14,14 @@ RUN apt-get update && apt-get install -y xz-utils ca-certificates rsync \
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Install moltbot (CLI is still named clawdbot until upstream renames)
+# Install OpenClaw (formerly clawdbot)
 # Pin to specific version for reproducible builds
-RUN npm install -g clawdbot@2026.1.24-3 \
-    && clawdbot --version
+RUN npm install -g openclaw@2026.1.29 \
+    && openclaw --version
 
-# Create moltbot directories (paths still use clawdbot until upstream renames)
-# Templates are stored in /root/.clawdbot-templates for initialization
-RUN mkdir -p /root/.clawdbot \
-    && mkdir -p /root/.clawdbot-templates \
+# Create moltbot directories (OpenClaw 2026.1.29+ uses ~/.openclaw)
+RUN mkdir -p /root/.openclaw \
+    && mkdir -p /root/.openclaw-templates \
     && mkdir -p /root/clawd \
     && mkdir -p /root/clawd/skills
 
@@ -32,7 +31,7 @@ COPY start-moltbot.sh /usr/local/bin/start-moltbot.sh
 RUN chmod +x /usr/local/bin/start-moltbot.sh
 
 # Copy default configuration template
-COPY moltbot.json.template /root/.clawdbot-templates/moltbot.json.template
+COPY moltbot.json.template /root/.openclaw-templates/moltbot.json.template
 
 # Copy custom skills
 COPY skills/ /root/clawd/skills/

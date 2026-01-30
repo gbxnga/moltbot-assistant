@@ -63,11 +63,12 @@ export function createMockSandbox(options: {
   const listProcessesMock = vi.fn().mockResolvedValue(options.processes || []);
   const containerFetchMock = vi.fn();
   
-  // Default: return empty stdout (not mounted), unless mounted: true
+  // Default: return "not_mounted" output, unless mounted: true
+  // The isR2Mounted function runs a command that echoes "mounted" or "not_mounted"
   const startProcessMock = vi.fn().mockResolvedValue(
-    options.mounted 
-      ? createMockProcess('s3fs on /data/moltbot type fuse.s3fs (rw,nosuid,nodev,relatime,user_id=0,group_id=0)\n')
-      : createMockProcess('')
+    options.mounted
+      ? createMockProcess('mounted\n')
+      : createMockProcess('not_mounted\n')
   );
   
   const sandbox = {

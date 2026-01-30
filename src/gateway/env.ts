@@ -60,6 +60,8 @@ export function buildEnvVars(env: MoltbotEnv): Record<string, string> {
   if (env.BRAVE_API_KEY) envVars.BRAVE_API_KEY = env.BRAVE_API_KEY;
   // Firecrawl API
   if (env.FIRECRAWL_API_KEY) envVars.FIRECRAWL_API_KEY = env.FIRECRAWL_API_KEY;
+  // OpenRouter API
+  if (env.OPENROUTER_API_KEY) envVars.OPENROUTER_API_KEY = env.OPENROUTER_API_KEY;
 
   return envVars;
 }

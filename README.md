@@ -350,6 +350,24 @@ npx wrangler secret put FIRECRAWL_API_KEY
 # Get your API key at https://firecrawl.dev
 ```
 
+### Multi-Model Access (OpenRouter)
+
+Access 100+ AI models including free DeepSeek, Qwen, Llama, and Gemini models via OpenRouter.
+
+**Setup:**
+```bash
+npx wrangler secret put OPENROUTER_API_KEY
+# Get your API key at https://openrouter.ai (free tier available)
+```
+
+**Free models included:**
+- DeepSeek V3, DeepSeek R1 (reasoning)
+- Qwen 2.5 72B
+- Gemini 2.0 Flash (1M context)
+- Llama 3.3 70B
+
+Models are automatically added as fallbacks if primary model fails.
+
 ## Optional: Cloudflare AI Gateway
 
 You can route API requests through [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/) for caching, rate limiting, analytics, and cost tracking. AI Gateway supports multiple providers — configure your preferred provider in the gateway and use these env vars:
@@ -407,6 +425,7 @@ The `AI_GATEWAY_*` variables take precedence over `ANTHROPIC_*` if both are set.
 | `WORKER_URL` | No | Public URL of the worker (required for CDP) |
 | `BRAVE_API_KEY` | No | Brave Search API key for web search ([brave.com/search/api](https://brave.com/search/api/)) |
 | `FIRECRAWL_API_KEY` | No | Firecrawl API key for enhanced web content extraction ([firecrawl.dev](https://firecrawl.dev)) |
+| `OPENROUTER_API_KEY` | No | OpenRouter API for multi-model access - DeepSeek, Qwen, Llama, Gemini ([openrouter.ai](https://openrouter.ai)) |
 
 ## Security Considerations
 

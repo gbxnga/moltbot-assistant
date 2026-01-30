@@ -83,6 +83,7 @@
   // - CDP_SECRET: (optional) Shared secret for /cdp endpoint authentication
   // - BRAVE_API_KEY: (optional) Brave Search API key for web search (https://brave.com/search/api/)
   // - FIRECRAWL_API_KEY: (optional) Firecrawl API key for enhanced web content extraction (https://firecrawl.dev)
+  // - OPENROUTER_API_KEY: (optional) OpenRouter API for multi-model access - DeepSeek, Qwen, Llama, Gemini (https://openrouter.ai)
   //
   // R2 persistent storage secrets (required for data persistence across sessions):
   // - R2_ACCESS_KEY_ID: R2 access key ID (from R2 API tokens)

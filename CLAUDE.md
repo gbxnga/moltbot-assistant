@@ -57,6 +57,7 @@ Worker secrets are set via `npx wrangler secret put <NAME>`:
 **Optional:**
 - `BRAVE_API_KEY` - Enables web search tool
 - `FIRECRAWL_API_KEY` - Enhanced web content extraction (fallback for web_fetch)
+- `OPENROUTER_API_KEY` - Multi-model access (DeepSeek, Qwen, Llama, Gemini free models)
 - `CDP_SECRET` / `WORKER_URL` - Enables browser automation
 - `TELEGRAM_BOT_TOKEN`, `DISCORD_BOT_TOKEN`, `SLACK_*` - Chat channels
 - `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `CF_ACCOUNT_ID` - Persistent storage

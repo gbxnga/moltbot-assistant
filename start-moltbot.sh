@@ -8,19 +8,21 @@
 
 set -e
 
-# Check if clawdbot gateway is already running - bail early if so
-# Note: CLI is still named "clawdbot" until upstream renames it
-if pgrep -f "clawdbot gateway" > /dev/null 2>&1; then
+# Check if openclaw gateway is already running - bail early if so
+if pgrep -f "openclaw gateway" > /dev/null 2>&1; then
     echo "Moltbot gateway is already running, exiting."
     exit 0
 fi
 
-# Paths (clawdbot paths are used internally - upstream hasn't renamed yet)
-CONFIG_DIR="/root/.clawdbot"
-CONFIG_FILE="$CONFIG_DIR/clawdbot.json"
-TEMPLATE_DIR="/root/.clawdbot-templates"
+# Paths (OpenClaw 2026.1.29+ uses ~/.openclaw)
+CONFIG_DIR="/root/.openclaw"
+CONFIG_FILE="$CONFIG_DIR/openclaw.json"
+TEMPLATE_DIR="/root/.openclaw-templates"
 TEMPLATE_FILE="$TEMPLATE_DIR/moltbot.json.template"
 BACKUP_DIR="/data/moltbot"
+# Legacy paths for migration from older versions
+LEGACY_CONFIG_DIR="/root/.clawdbot"
+LEGACY_R2_DIR="$BACKUP_DIR/clawdbot"
 
 echo "Config directory: $CONFIG_DIR"
 echo "Backup directory: $BACKUP_DIR"
@@ -72,21 +74,37 @@ should_restore_from_r2() {
     fi
 }
 
-if [ -f "$BACKUP_DIR/clawdbot/clawdbot.json" ]; then
+# Check for new format first (openclaw/openclaw.json)
+if [ -f "$BACKUP_DIR/openclaw/openclaw.json" ]; then
     if should_restore_from_r2; then
-        echo "Restoring from R2 backup at $BACKUP_DIR/clawdbot..."
-        cp -a "$BACKUP_DIR/clawdbot/." "$CONFIG_DIR/"
-        # Copy the sync timestamp to local so we know what version we have
+        echo "Restoring from R2 backup at $BACKUP_DIR/openclaw..."
+        cp -a "$BACKUP_DIR/openclaw/." "$CONFIG_DIR/"
         cp -f "$BACKUP_DIR/.last-sync" "$CONFIG_DIR/.last-sync" 2>/dev/null || true
         echo "Restored config from R2 backup"
     fi
-elif [ -f "$BACKUP_DIR/clawdbot.json" ]; then
-    # Legacy backup format (flat structure)
+# Migrate from old format (clawdbot/clawdbot.json)
+elif [ -f "$BACKUP_DIR/clawdbot/clawdbot.json" ]; then
     if should_restore_from_r2; then
-        echo "Restoring from legacy R2 backup at $BACKUP_DIR..."
-        cp -a "$BACKUP_DIR/." "$CONFIG_DIR/"
+        echo "Migrating from legacy R2 backup at $BACKUP_DIR/clawdbot..."
+        cp -a "$BACKUP_DIR/clawdbot/." "$CONFIG_DIR/"
+        # Rename config file to new name
+        if [ -f "$CONFIG_DIR/clawdbot.json" ]; then
+            mv "$CONFIG_DIR/clawdbot.json" "$CONFIG_DIR/openclaw.json"
+            echo "Renamed clawdbot.json to openclaw.json"
+        fi
         cp -f "$BACKUP_DIR/.last-sync" "$CONFIG_DIR/.last-sync" 2>/dev/null || true
-        echo "Restored config from legacy R2 backup"
+        echo "Migrated config from legacy R2 backup"
+    fi
+# Very old legacy backup format (flat structure)
+elif [ -f "$BACKUP_DIR/clawdbot.json" ]; then
+    if should_restore_from_r2; then
+        echo "Migrating from very old R2 backup at $BACKUP_DIR..."
+        cp -a "$BACKUP_DIR/." "$CONFIG_DIR/"
+        if [ -f "$CONFIG_DIR/clawdbot.json" ]; then
+            mv "$CONFIG_DIR/clawdbot.json" "$CONFIG_DIR/openclaw.json"
+        fi
+        cp -f "$BACKUP_DIR/.last-sync" "$CONFIG_DIR/.last-sync" 2>/dev/null || true
+        echo "Migrated config from very old R2 backup"
     fi
 elif [ -d "$BACKUP_DIR" ]; then
     echo "R2 mounted at $BACKUP_DIR but no backup data found yet"
@@ -136,7 +154,7 @@ fi
 node << EOFNODE
 const fs = require('fs');
 
-const configPath = '/root/.clawdbot/clawdbot.json';
+const configPath = '/root/.openclaw/openclaw.json';
 console.log('Updating config at:', configPath);
 let config = {};
 
@@ -234,20 +252,40 @@ if (process.env.BRAVE_API_KEY) {
     console.log('Configured Brave Search web tool');
 }
 
-// Firecrawl API configuration for enhanced web content extraction
-if (process.env.FIRECRAWL_API_KEY) {
-    config.tools = config.tools || {};
-    config.tools.web = config.tools.web || {};
-    config.tools.web.fetch = config.tools.web.fetch || {};
-    config.tools.web.fetch.firecrawl = {
-        enabled: true,
-        apiKey: process.env.FIRECRAWL_API_KEY,
-        baseUrl: 'https://api.firecrawl.dev',
-        onlyMainContent: true,
-        maxAgeMs: 86400000,
-        timeoutSeconds: 60
+// Note: FIRECRAWL_API_KEY is passed as env var for OpenClaw to read directly
+// (config entry not supported in this version - OpenClaw reads from process.env.FIRECRAWL_API_KEY)
+
+// OpenRouter API configuration for multi-model access (includes free models)
+if (process.env.OPENROUTER_API_KEY) {
+    config.models = config.models || {};
+    config.models.providers = config.models.providers || {};
+    config.models.providers.openrouter = {
+        baseUrl: 'https://openrouter.ai/api/v1',
+        apiKey: process.env.OPENROUTER_API_KEY,
+        models: [
+            // Free models
+            { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek V3 (Free)', contextWindow: 128000 },
+            { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1 (Free)', contextWindow: 128000 },
+            { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B (Free)', contextWindow: 128000 },
+            { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash (Free)', contextWindow: 1000000 },
+            { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', contextWindow: 128000 },
+            // Paid models (low cost)
+            { id: 'deepseek/deepseek-chat', name: 'DeepSeek Chat', contextWindow: 128000 },
+            { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', contextWindow: 128000 },
+        ]
     };
-    console.log('Configured Firecrawl web fetch fallback');
+    // Add to allowlist
+    config.agents.defaults.models = config.agents.defaults.models || {};
+    config.agents.defaults.models['openrouter/deepseek/deepseek-chat-v3-0324:free'] = { alias: 'DeepSeek V3' };
+    config.agents.defaults.models['openrouter/deepseek/deepseek-r1:free'] = { alias: 'DeepSeek R1' };
+    config.agents.defaults.models['openrouter/qwen/qwen-2.5-72b-instruct:free'] = { alias: 'Qwen 2.5' };
+    config.agents.defaults.models['openrouter/google/gemini-2.0-flash-exp:free'] = { alias: 'Gemini 2.0' };
+    config.agents.defaults.models['openrouter/meta-llama/llama-3.3-70b-instruct:free'] = { alias: 'Llama 3.3' };
+    // Add as fallbacks
+    config.agents.defaults.model.fallbacks = config.agents.defaults.model.fallbacks || [];
+    config.agents.defaults.model.fallbacks.push('openrouter/deepseek/deepseek-chat-v3-0324:free');
+    config.agents.defaults.model.fallbacks.push('openrouter/qwen/qwen-2.5-72b-instruct:free');
+    console.log('Configured OpenRouter with free models (DeepSeek, Qwen, Gemini, Llama)');
 }
 
 // Base URL override (e.g., for Cloudflare AI Gateway)
@@ -321,6 +359,7 @@ echo "Starting Moltbot Gateway..."
 echo "Gateway will be available on port 18789"
 
 # Clean up stale lock files
+rm -f /tmp/openclaw-gateway.lock 2>/dev/null || true
 rm -f /tmp/clawdbot-gateway.lock 2>/dev/null || true
 rm -f "$CONFIG_DIR/gateway.lock" 2>/dev/null || true
 
@@ -329,8 +368,8 @@ echo "Dev mode: ${CLAWDBOT_DEV_MODE:-false}, Bind mode: $BIND_MODE"
 
 if [ -n "$CLAWDBOT_GATEWAY_TOKEN" ]; then
     echo "Starting gateway with token auth..."
-    exec clawdbot gateway --port 18789 --verbose --allow-unconfigured --bind "$BIND_MODE" --token "$CLAWDBOT_GATEWAY_TOKEN"
+    exec openclaw gateway --port 18789 --verbose --allow-unconfigured --bind "$BIND_MODE" --token "$CLAWDBOT_GATEWAY_TOKEN"
 else
     echo "Starting gateway with device pairing (no token)..."
-    exec clawdbot gateway --port 18789 --verbose --allow-unconfigured --bind "$BIND_MODE"
+    exec openclaw gateway --port 18789 --verbose --allow-unconfigured --bind "$BIND_MODE"
 fi

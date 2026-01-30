@@ -32,3 +32,7 @@ MOLTBOT_GATEWAY_TOKEN=dev-token-change-in-prod
 # Firecrawl API for enhanced web content extraction (optional fallback for web_fetch)
 # Get your API key at https://firecrawl.dev
 # FIRECRAWL_API_KEY=fc-...
+
+# OpenRouter API for multi-model access (DeepSeek, Qwen, Llama, Gemini free models)
+# Get your API key at https://openrouter.ai (free tier available)
+# OPENROUTER_API_KEY=sk-or-...
