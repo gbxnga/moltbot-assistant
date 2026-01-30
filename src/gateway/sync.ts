@@ -57,10 +57,22 @@ export async function syncToR2(sandbox: Sandbox, env: MoltbotEnv): Promise<SyncR
     };
   }
 
-  // Run rsync to backup config to R2
+  // Run rsync to backup config and workspace data to R2
   // Note: Use --no-times because s3fs doesn't support setting timestamps
-  // Backup structure: ${R2_MOUNT_PATH}/openclaw/ and ${R2_MOUNT_PATH}/skills/
-  const syncCmd = `rsync -r --no-times --delete --exclude='*.lock' --exclude='*.log' --exclude='*.tmp' /root/.openclaw/ ${R2_MOUNT_PATH}/openclaw/ && rsync -r --no-times --delete /root/clawd/skills/ ${R2_MOUNT_PATH}/skills/ && date -Iseconds > ${R2_MOUNT_PATH}/.last-sync`;
+  // Backup structure:
+  //   ${R2_MOUNT_PATH}/openclaw/ - config files
+  //   ${R2_MOUNT_PATH}/skills/   - custom skills
+  //   ${R2_MOUNT_PATH}/clawd/    - workspace data (memories, conversations, etc.)
+  const syncCmd = [
+    // Sync config directory
+    `rsync -r --no-times --delete --exclude='*.lock' --exclude='*.log' --exclude='*.tmp' /root/.openclaw/ ${R2_MOUNT_PATH}/openclaw/`,
+    // Sync skills
+    `rsync -r --no-times --delete /root/clawd/skills/ ${R2_MOUNT_PATH}/skills/`,
+    // Sync workspace data (memories, conversations) - exclude skills (synced separately) and heavy dirs
+    `rsync -r --no-times --delete --exclude='skills/' --exclude='node_modules/' --exclude='.git/' --exclude='*.log' --exclude='*.tmp' /root/clawd/ ${R2_MOUNT_PATH}/clawd/`,
+    // Write sync timestamp
+    `date -Iseconds > ${R2_MOUNT_PATH}/.last-sync`,
+  ].join(' && ');
 
   try {
     const proc = await sandbox.startProcess(syncCmd);

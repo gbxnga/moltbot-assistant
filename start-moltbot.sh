@@ -181,7 +181,20 @@ if (config.models?.providers?.anthropic?.models) {
     }
 }
 
-
+// Clean up invalid keys from old config versions (not supported in openclaw 2026.1.29+)
+// These may exist in R2 backups from clawdbot era
+if (config.tools?.web?.fetch?.firecrawl) {
+    console.log('Removing unsupported firecrawl config from tools.web.fetch');
+    delete config.tools.web.fetch.firecrawl;
+    // Clean up empty parent objects
+    if (Object.keys(config.tools.web.fetch).length === 0) {
+        delete config.tools.web.fetch;
+    }
+}
+if (config.models?.providers?.openrouter?.api) {
+    console.log('Removing invalid openrouter.api field');
+    delete config.models.providers.openrouter.api;
+}
 
 // Gateway configuration
 config.gateway.port = 18789;
