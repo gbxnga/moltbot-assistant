@@ -20,13 +20,24 @@ function createClient(options = {}) {
   if (!CDP_SECRET) {
     throw new Error('CDP_SECRET environment variable not set');
   }
-  
+
   const workerUrl = (options.workerUrl || process.env.WORKER_URL).replace(/^https?:\/\//, '');
   const wsUrl = `wss://${workerUrl}/cdp?secret=${encodeURIComponent(CDP_SECRET)}`;
   const timeout = options.timeout || 60000;
-  
+
+  // Build WebSocket options with Cloudflare Access Service Token headers if available
+  const wsOptions = {};
+  const cfAccessClientId = options.cfAccessClientId || process.env.CF_ACCESS_CLIENT_ID;
+  const cfAccessClientSecret = options.cfAccessClientSecret || process.env.CF_ACCESS_CLIENT_SECRET;
+  if (cfAccessClientId && cfAccessClientSecret) {
+    wsOptions.headers = {
+      'CF-Access-Client-Id': cfAccessClientId,
+      'CF-Access-Client-Secret': cfAccessClientSecret
+    };
+  }
+
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl, wsOptions);
     let messageId = 1;
     const pending = new Map();
     let targetId = null;

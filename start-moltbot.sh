@@ -187,7 +187,6 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
     config.channels.telegram = config.channels.telegram || {};
     config.channels.telegram.botToken = process.env.TELEGRAM_BOT_TOKEN;
     config.channels.telegram.enabled = true;
-    config.channels.telegram.dm = config.channels.telegram.dm || {};
     config.channels.telegram.dmPolicy = process.env.TELEGRAM_DM_POLICY || 'pairing';
 }
 
@@ -206,6 +205,18 @@ if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
     config.channels.slack.botToken = process.env.SLACK_BOT_TOKEN;
     config.channels.slack.appToken = process.env.SLACK_APP_TOKEN;
     config.channels.slack.enabled = true;
+}
+
+// Browser configuration for CDP (Cloudflare Browser Rendering)
+if (process.env.CDP_SECRET && process.env.WORKER_URL) {
+    const cdpUrl = process.env.WORKER_URL.replace(/\/$/, '') + '/cdp?secret=' + encodeURIComponent(process.env.CDP_SECRET);
+    config.browser = config.browser || {};
+    config.browser.profiles = config.browser.profiles || {};
+    config.browser.profiles.cloudflare = {
+        cdpUrl: cdpUrl,
+        color: '#F38020'  // Cloudflare orange
+    };
+    console.log('Configured browser profile with CDP URL');
 }
 
 // Base URL override (e.g., for Cloudflare AI Gateway)

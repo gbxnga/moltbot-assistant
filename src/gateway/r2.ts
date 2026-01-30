@@ -54,6 +54,8 @@ export async function mountR2Storage(sandbox: Sandbox, env: MoltbotEnv): Promise
         accessKeyId: env.R2_ACCESS_KEY_ID,
         secretAccessKey: env.R2_SECRET_ACCESS_KEY,
       },
+      // Allow mounting over non-empty directory (container may have existing files)
+      s3fsOptions: ['nonempty'],
     });
     console.log('R2 bucket mounted successfully - moltbot data will persist across sessions');
     return true;

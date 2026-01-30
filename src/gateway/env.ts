@@ -53,6 +53,9 @@ export function buildEnvVars(env: MoltbotEnv): Record<string, string> {
   if (env.SLACK_APP_TOKEN) envVars.SLACK_APP_TOKEN = env.SLACK_APP_TOKEN;
   if (env.CDP_SECRET) envVars.CDP_SECRET = env.CDP_SECRET;
   if (env.WORKER_URL) envVars.WORKER_URL = env.WORKER_URL;
+  // Cloudflare Access Service Token for CDP endpoint auth
+  if (env.CF_ACCESS_CLIENT_ID) envVars.CF_ACCESS_CLIENT_ID = env.CF_ACCESS_CLIENT_ID;
+  if (env.CF_ACCESS_CLIENT_SECRET) envVars.CF_ACCESS_CLIENT_SECRET = env.CF_ACCESS_CLIENT_SECRET;
 
   return envVars;
 }
